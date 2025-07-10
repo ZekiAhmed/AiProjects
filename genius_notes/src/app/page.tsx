@@ -1,7 +1,14 @@
+"use client";
+
 import logo from "@/assets/logo.png";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import Link from "next/link";
+
+import { Authenticated, Unauthenticated } from "convex/react";
+import { SignInButton, UserButton } from "@clerk/nextjs";
+import { useQuery } from "convex/react";
+import { api } from "../../convex/_generated/api";
 
 export default function Home() {
   return (
@@ -33,7 +40,9 @@ export default function Home() {
         {/* CTA Button */}
         <div className="pt-4">
           <Button asChild size="lg" className="text-lg px-8 py-3">
-            <Link href="/notes">Get Started</Link>
+            <Link href="/notes" prefetch={false}>
+              Get Started
+            </Link>
           </Button>
         </div>
 
@@ -58,4 +67,9 @@ export default function Home() {
       </footer>
     </div>
   );
+}
+
+function Content() {
+  const messages = useQuery(api.messages.getForCurrentUser);
+  return <div>Authenticated content: {messages?.length}</div>;
 }

@@ -2,14 +2,15 @@ import logo from "@/assets/logo.png";
 import { ModeToggle } from "@/components/mode-toggle";
 import Image from "next/image";
 import Link from "next/link";
-import { SignOutButton } from "./sign-out-button";
+import { SignedIn, UserButton } from "@clerk/nextjs";
+// import { SignOutButton } from "./sign-out-button";
 
 export function Navbar() {
   return (
     <nav className="flex justify-center p-4 bg-card border-b">
       <div className="container xl:max-w-6xl flex items-center mx-auto justify-between">
         <Link
-          href="/notes"
+          href="/"
           className="flex items-center gap-3 text-xl font-semibold text-card-foreground hover:opacity-80 transition-opacity"
         >
           <Image
@@ -23,7 +24,17 @@ export function Navbar() {
         </Link>
         <div className="flex items-center gap-2">
           <ModeToggle />
-          <SignOutButton />
+          <SignedIn>
+            <UserButton
+              appearance={{
+                elements: {
+                  userButtonAvatarBox: "w-8 h-8",
+                  userButtonAvatar: "rounded-full",
+                },
+              }}
+            />
+          </SignedIn>
+          {/* <SignOutButton /> */}
         </div>
       </div>
     </nav>
