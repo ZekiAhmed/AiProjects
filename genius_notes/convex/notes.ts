@@ -1,6 +1,21 @@
 import { v } from "convex/values";
-import { mutation } from "./_generated/server";
+import { mutation, query } from "./_generated/server";
 import { getCurrentUser } from "./users";
+
+export const getUserNotes = query({
+  args: {},
+  handler: async (ctx) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) {
+      throw new Error("User must be authenticated to fetch notes");
+    }
+    return await ctx.db
+      .query("notes")
+      .withIndex("byUserId", (q) => q.eq("userId", user._id))
+      .order("desc")
+      .collect();
+  },
+});
 
 export const createNote = mutation({
   args: {
