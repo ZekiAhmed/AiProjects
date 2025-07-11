@@ -13,7 +13,7 @@ const schema = defineSchema({
     title: v.string(),
     body: v.string(),
     userId: v.id("users"),
-  }),
+  }).index("byUserId", ["userId"]),
 });
 
 export default schema;
