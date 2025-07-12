@@ -35,3 +35,20 @@ export const createNote = mutation({
     });
   },
 });
+
+export const deleteNote = mutation({
+  args: {
+    noteId: v.id("notes"),
+  },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) {
+      throw new Error("User must be authenticated to delete a note");
+    }
+    const note = await ctx.db.get(args.noteId);
+    if (!note || note.userId !== user._id) {
+      throw new Error("Note not found or does not belong to the user");
+    }
+    await ctx.db.delete(args.noteId);
+  },
+});
