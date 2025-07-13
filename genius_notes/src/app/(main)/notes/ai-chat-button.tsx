@@ -35,6 +35,19 @@ interface AIChatBoxProps {
   onClose: () => void;
 }
 
+const initialMessages: UIMessage[] = [
+  {
+    id: "welcome-message",
+    role: "assistant",
+    parts: [
+      {
+        type: "text",
+        text: "I'm your notes assistant. I can find and summarize any information that you saved.",
+      },
+    ],
+  },
+];
+
 function AIChatBox({ open, onClose }: AIChatBoxProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const { isAuthenticated } = useConvexAuth();
@@ -115,6 +128,7 @@ function ChatContent({ token }: { token: string }) {
         Authorization: `Bearer ${token}`,
       },
     }),
+    messages: initialMessages,
   });
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
