@@ -1,8 +1,10 @@
 import { httpRouter } from "convex/server";
 import { httpAction } from "./_generated/server";
-import { internal } from "./_generated/api";
+import { api, internal } from "./_generated/api";
 import type { WebhookEvent } from "@clerk/backend";
 import { Webhook } from "svix";
+import { convertToModelMessages, streamText, UIMessage } from "ai";
+import { google } from "@ai-sdk/google";
 
 const http = httpRouter();
 
@@ -50,5 +52,63 @@ async function validateRequest(req: Request): Promise<WebhookEvent | null> {
     return null;
   }
 }
+
+http.route({
+  path: "/api/chat",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    // check this chatGpt link: https://chatgpt.com/share/6872ff2d-c084-800b-81e3-f8b0586c0f76
+    const user = await ctx.auth.getUserIdentity();
+    // const user = await ctx.runQuery(api.users.current, {});
+    if (!user) {
+      return Response.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { messages }: { messages: UIMessage[] } = await request.json();
+
+    const lastMessage = messages.slice(-10);
+
+    const result = streamText({
+      model: google("gemini-1.5-flash"),
+      system: "You are a helpful assistant that answers the user's questions.",
+      messages: convertToModelMessages(lastMessage),
+      onError(error) {
+        console.error("StreamText error:", error);
+      },
+    });
+
+    return result.toUIMessageStreamResponse({
+      headers: new Headers({
+        "Access-Control-Allow-Origin": "*",
+        Vary: "origin",
+      }),
+    });
+  }),
+});
+
+http.route({
+  path: "/api/chat",
+  method: "OPTIONS",
+  handler: httpAction(async (_, request) => {
+    const headers = request.headers;
+    if (
+      headers.get("Origin") !== null &&
+      headers.get("Access-Control-Request-Method") !== null &&
+      headers.get("Access-Control-Request-Headers") !== null
+    ) {
+      return new Response(null, {
+        headers: new Headers({
+          "Access-Control-Allow-Origin": "*",
+          // "Access-Control-Allow-Origin": "http://localhost:3000/*",
+          "Access-Control-Allow-Methods": "POST",
+          "Access-Control-Allow-Headers": "Content-Type, Digest, Authorization",
+          "Access-Control-Max-Age": "86400",
+        }),
+      });
+    } else {
+      return new Response();
+    }
+  }),
+});
 
 export default http;
