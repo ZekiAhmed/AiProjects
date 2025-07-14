@@ -1,4 +1,4 @@
-const time = "00:55:54";
+const time = "01:27:54";
 
 const time2 = "1:07:03";
 

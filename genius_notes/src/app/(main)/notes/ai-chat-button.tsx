@@ -10,6 +10,7 @@ import { DefaultChatTransport, UIMessage } from "ai";
 import { useConvexAuth } from "convex/react";
 import { useAuth } from "@clerk/nextjs";
 import Markdown from "@/components/markdown";
+import { set } from "zod";
 
 const convexSiteUrl = process.env.NEXT_PUBLIC_CONVEX_URL?.replace(
   /.cloud$/,
@@ -65,6 +66,69 @@ function AIChatBox({ open, onClose }: AIChatBoxProps) {
   if (!open) return null;
 
   return (
+    <ChatContent
+      token={token || ""}
+      isExpanded={isExpanded}
+      onClose={onClose}
+      setIsExpanded={setIsExpanded}
+      isAuthenticated={isAuthenticated}
+      open={open}
+    />
+  );
+}
+
+function ChatContent({
+  token,
+  isExpanded,
+  setIsExpanded,
+  isAuthenticated,
+  open,
+  onClose,
+}: {
+  token: string;
+  isExpanded: boolean;
+  setIsExpanded: (isExpanded: boolean) => void;
+  isAuthenticated: boolean;
+  open: boolean;
+  onClose: () => void;
+}) {
+  const [input, setInput] = useState("");
+
+  const { messages, sendMessage, setMessages, status } = useChat({
+    transport: new DefaultChatTransport({
+      api: `${convexSiteUrl}/api/chat`,
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }),
+    messages: initialMessages,
+  });
+
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const isProcessing = status === "submitted" || status === "streaming";
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [open, messages]);
+
+  function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (input.trim() && !isProcessing) {
+      sendMessage({ text: input });
+      setInput("");
+    }
+  }
+
+  const handlekeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      onSubmit(e as unknown as React.FormEvent);
+    }
+  };
+
+  const lastMessageUser = messages[messages.length - 1]?.role === "user";
+
+  return (
     <div
       className={cn(
         "animate-in slide-in-from-bottom-10 bg-card fixed right-4 bottom-4 z-50 flex flex-col rounded-lg border shadow-lg duration-300 2xl:right-16",
@@ -91,7 +155,7 @@ function AIChatBox({ open, onClose }: AIChatBoxProps) {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => {}}
+            onClick={() => setMessages(initialMessages)}
             className="text-primary-foreground hover:bg-primary/90 h-8 w-8"
             title="Clear chat"
           >
@@ -107,67 +171,44 @@ function AIChatBox({ open, onClose }: AIChatBoxProps) {
           </Button>
         </div>
       </div>
+
       {isAuthenticated && token ? (
-        <ChatContent token={token} />
+        <>
+          <div className="flex-1 space-y-4 overflow-y-auto p-3">
+            {messages.map((message) => (
+              // <p key={message.id}>{JSON.stringify(message)}</p>
+              <ChatMessage key={message.id} message={message} />
+            ))}
+            {lastMessageUser && isProcessing && <Loader />}
+            {status === "error" && <ErrorMessage />}
+            <div ref={messagesEndRef} />
+          </div>
+
+          <form className="flex gap-2 border-t p-3" onSubmit={onSubmit}>
+            <Textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handlekeyDown}
+              placeholder="Type your message..."
+              className="max-h-[120px] min-h-[40px] resize-none overflow-y-auto"
+              maxLength={1000}
+              autoFocus
+            />
+            <Button
+              type="submit"
+              size="icon"
+              disabled={!input.trim() || isProcessing}
+            >
+              <Send className="size-4" />
+            </Button>
+          </form>
+        </>
       ) : (
         <div className="flex h-full items-center justify-center p-3">
           <Loader />
         </div>
       )}
     </div>
-  );
-}
-
-function ChatContent({ token }: { token: string }) {
-  const [input, setInput] = useState("");
-
-  const { messages, sendMessage } = useChat({
-    transport: new DefaultChatTransport({
-      api: `${convexSiteUrl}/api/chat`,
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }),
-    messages: initialMessages,
-  });
-
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
-
-  function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (input.trim()) {
-      sendMessage({ text: input });
-      setInput("");
-    }
-  }
-  return (
-    <>
-      <div className="flex-1 space-y-4 overflow-y-auto p-3">
-        {messages.map((message) => (
-          // <p key={message.id}>{JSON.stringify(message)}</p>
-          <ChatMessage key={message.id} message={message} />
-        ))}
-        <div ref={messagesEndRef} />
-      </div>
-
-      <form className="flex gap-2 border-t p-3" onSubmit={onSubmit}>
-        <Textarea
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Type your message..."
-          className="max-h-[120px] min-h-[40px] resize-none overflow-y-auto"
-          maxLength={1000}
-          autoFocus
-        />
-        <Button type="submit" size="icon">
-          <Send className="size-4" />
-        </Button>
-      </form>
-    </>
   );
 }
 
@@ -216,6 +257,14 @@ function Loader() {
       <div className="bg-primary size-1.5 animate-pulse rounded-full" />
       <div className="bg-primary size-1.5 animate-pulse rounded-full delay-150" />
       <div className="bg-primary size-1.5 animate-pulse rounded-full delay-300" />
+    </div>
+  );
+}
+
+function ErrorMessage() {
+  return (
+    <div className="text-red-500 text-sm">
+      <p>Something went wrong. Please try again.</p>
     </div>
   );
 }
