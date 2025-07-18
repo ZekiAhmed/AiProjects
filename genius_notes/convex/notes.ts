@@ -1,6 +1,7 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { internalMutation, mutation, query } from "./_generated/server";
 import { getCurrentUser } from "./users";
+import { embed } from "ai";
 
 export const getUserNotes = query({
   args: {},
@@ -17,22 +18,36 @@ export const getUserNotes = query({
   },
 });
 
-export const createNote = mutation({
+export const createNoteWithEmbeddings = internalMutation({
   args: {
     title: v.string(),
     body: v.string(),
+    userId: v.id("users"),
+    embeddings: v.array(
+      v.object({
+        embedding: v.array(v.float64()),
+        content: v.string(),
+      })
+    ),
   },
   returns: v.id("notes"),
   handler: async (ctx, args) => {
-    const user = await getCurrentUser(ctx); // Use the helper function instead of the Convex query
-    if (!user) {
-      throw new Error("User must be authenticated to create a note");
-    }
-    return await ctx.db.insert("notes", {
+    const noteId = await ctx.db.insert("notes", {
       title: args.title,
       body: args.body,
-      userId: user._id, // Use user._id or the appropriate user identifier
+      userId: args.userId,
     });
+
+    for (const embeddingData of args.embeddings) {
+      await ctx.db.insert("noteEmbeddings", {
+        content: embeddingData.content,
+        embedding: embeddingData.embedding,
+        noteId,
+        userId: args.userId,
+      });
+    }
+
+    return noteId;
   },
 });
 
@@ -49,6 +64,16 @@ export const deleteNote = mutation({
     if (!note || note.userId !== user._id) {
       throw new Error("Note not found or does not belong to the user");
     }
+
+    const embeddings = await ctx.db
+      .query("noteEmbeddings")
+      .withIndex("byNoteId", (q) => q.eq("noteId", args.noteId))
+      .collect();
+
+    for (const embedding of embeddings) {
+      await ctx.db.delete(embedding._id);
+    }
+
     await ctx.db.delete(args.noteId);
   },
 });

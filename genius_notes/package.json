@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
+    "dev:no-check": "next dev --turbopack --typecheck=disable",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -23,7 +24,7 @@
     "ai": "^5.0.0-alpha.12",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "convex": "^1.24.8",
+    "convex": "^1.25.4",
     "jose": "^6.0.11",
     "lucide-react": "^0.514.0",
     "next": "15.3.3",
