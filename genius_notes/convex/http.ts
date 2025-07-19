@@ -3,8 +3,9 @@ import { httpAction } from "./_generated/server";
 import { api, internal } from "./_generated/api";
 import type { WebhookEvent } from "@clerk/backend";
 import { Webhook } from "svix";
-import { convertToModelMessages, streamText, UIMessage } from "ai";
+import { convertToModelMessages, streamText, tool, UIMessage } from "ai";
 import { google } from "@ai-sdk/google";
+import z from "zod";
 
 const http = httpRouter();
 
@@ -58,8 +59,8 @@ http.route({
   method: "POST",
   handler: httpAction(async (ctx, request) => {
     // check this chatGpt link: https://chatgpt.com/share/6872ff2d-c084-800b-81e3-f8b0586c0f76
-    const user = await ctx.auth.getUserIdentity();
-    // const user = await ctx.runQuery(api.users.current, {});
+    // const user = await ctx.auth.getUserIdentity();
+    const user = await ctx.runQuery(api.users.current, {});
     if (!user) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -70,8 +71,42 @@ http.route({
 
     const result = streamText({
       model: google("gemini-1.5-flash"),
-      system: "You are a helpful assistant that answers the user's questions.",
+      system: `
+      You are a helpful assistant that can search through the user's notes.
+      Use the information from the notes to answer questions and provide insights.
+      If the requested information is not available, respond with "Sorry, I can't find that information in your notes".
+      You can use markdown formatting like links, bullet points, numbered lists, and bold text.
+      Provide links to relevant notes using this relative URL structure (omit the base URL): '/notes?noteId=<note-id>'.
+      Keep your responses concise and to the point.
+      `,
       messages: convertToModelMessages(lastMessage),
+      tools: {
+        findRelevantNotes: tool({
+          description:
+            "Retrieve relevant notes from the database based on the user's query",
+          parameters: z.object({
+            query: z.string().describe("The user's query"),
+          }),
+          execute: async ({ query }) => {
+            console.log("findRelevantNotes query:", query);
+
+            const relevantNotes = await ctx.runAction(
+              internal.notesActions.findRelevantNotes,
+              {
+                query,
+                userId: user._id,
+              }
+            );
+
+            return relevantNotes.map((note) => ({
+              id: note._id,
+              title: note.title,
+              body: note.body,
+              creationTime: note._creationTime,
+            }));
+          },
+        }),
+      },
       onError(error) {
         console.error("StreamText error:", error);
       },

@@ -102,6 +102,7 @@ function ChatContent({
       },
     }),
     messages: initialMessages,
+    maxSteps: 3,
   });
 
   const messagesEndRef = useRef<HTMLDivElement>(null);

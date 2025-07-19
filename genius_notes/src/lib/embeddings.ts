@@ -1,5 +1,5 @@
 import { google } from "@ai-sdk/google";
-import { embedMany } from "ai";
+import { embed, embedMany } from "ai";
 
 // const { embedding, usage } = await embed({
 //   model: google.embedding("models/gemini-embedding-001"),
@@ -21,7 +21,7 @@ export async function generateEmbeddings(
   value: string
 ): Promise<Array<{ content: string; embedding: number[] }>> {
   const chunks = generateChuncks(value);
-  const { embeddings, usage } = await embedMany({
+  const { embeddings } = await embedMany({
     model: EMBEDDING_MODEL,
     values: chunks,
   });
@@ -30,4 +30,13 @@ export async function generateEmbeddings(
     content: chunks[index],
     embedding,
   }));
+}
+
+export async function generateEmbedding(value: string): Promise<number[]> {
+  const { embedding } = await embed({
+    model: EMBEDDING_MODEL,
+    value,
+  });
+
+  return embedding;
 }

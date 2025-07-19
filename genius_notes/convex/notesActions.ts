@@ -1,10 +1,10 @@
 "use node";
 
 import { v } from "convex/values";
-import { action } from "./_generated/server";
-import { generateEmbeddings } from "../src/lib/embeddings";
+import { action, internalAction } from "./_generated/server";
+import { generateEmbedding, generateEmbeddings } from "../src/lib/embeddings";
 import { internal, api } from "./_generated/api";
-import { Id } from "./_generated/dataModel";
+import { Doc, Id } from "./_generated/dataModel";
 
 export const createNote = action({
   args: {
@@ -32,11 +32,38 @@ export const createNote = action({
     );
 
     return noteId;
+  },
+});
 
-    // return await ctx.db.insert("notes", {
-    //   title: args.title,
-    //   body: args.body,
-    //   userId: user._id, // Use user._id or the appropriate user identifier
-    // });
+export const findRelevantNotes = internalAction({
+  args: {
+    query: v.string(),
+    userId: v.id("users"),
+  },
+  handler: async (ctx, args): Promise<Doc<"notes">[]> => {
+    const embedding = await generateEmbedding(args.query);
+
+    const results = await ctx.vectorSearch("noteEmbeddings", "byEmbedding", {
+      vector: embedding,
+      limit: 16,
+      filter: (q) => q.eq("userId", args.userId),
+    });
+
+    console.log("vector search results:", results);
+
+    const resultAboveThreshold = results.filter(
+      (result) => result._score > 0.3
+    );
+
+    const embeddingIds = resultAboveThreshold.map((result) => result._id);
+
+    const notes: Doc<"notes">[] = await ctx.runQuery(
+      internal.notes.fetchNotesByEmbeddingIds,
+      {
+        embeddingIds,
+      }
+    );
+
+    return notes;
   },
 });

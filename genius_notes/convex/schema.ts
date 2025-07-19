@@ -25,7 +25,7 @@ export default defineSchema({
     .index("byNoteId", ["noteId"])
     .vectorIndex("byEmbedding", {
       vectorField: "embedding",
-      dimensions: 1536, // Adjust based on your embedding model
+      dimensions: 768, // Adjust based on your embedding model
       filterFields: ["userId"],
     }),
 });
