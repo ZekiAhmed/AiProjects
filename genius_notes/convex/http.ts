@@ -70,7 +70,7 @@ http.route({
     const lastMessage = messages.slice(-10);
 
     const result = streamText({
-      model: google("gemini-1.5-flash"),
+      model: google("gemini-2.0-flash-lite"), //gemini-2.0-flash-lite
       system: `
       You are a helpful assistant that can search through the user's notes.
       Use the information from the notes to answer questions and provide insights.
