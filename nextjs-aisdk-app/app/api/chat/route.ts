@@ -9,13 +9,28 @@ export async function POST(req: Request) {
 
     const result = streamText({
       model: google("gemini-2.5-flash"),
-      messages:[
+      messages: [
+        // {
+        //   role: "system",
+        //   content:
+        //     "You are a helpful coding assistant. Keep responses under 3 sentences and focus on practical examples.",
+        // },
         {
           role: "system",
           content:
-            "You are a helpful coding assistant. Keep responses under 3 sentences and focus on practical examples.",
+            "convert user question about React into code example.",
         },
-        ... await convertToModelMessages(messages),
+        {
+          role: "user",
+          content:
+            "How to toggle a boolean?",
+        },
+        {
+          role: "assistant",
+          content:
+            "const [isOpen, setIsOpen] = useState(false); \nconst toggle = () => setIsOpen(!isOpen);",
+        },
+        ...await convertToModelMessages(messages),
       ],
     });
 
