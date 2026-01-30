@@ -1,4 +1,4 @@
-import { openai } from "@ai-sdk/openai";
+import { elevenlabs } from '@ai-sdk/elevenlabs';
 import { experimental_transcribe as transcribe } from "ai";
 
 export async function POST(req: Request) {
@@ -17,8 +17,9 @@ export async function POST(req: Request) {
 
     // Transcribe the audio
     const transcript = await transcribe({
-      model: openai.transcription("whisper-1"),
+      model: elevenlabs.transcription('scribe_v1'),
       audio: uint8Array,
+      providerOptions: { elevenlabs: { languageCode: 'en' } },
     });
 
     // Return the transcript data
