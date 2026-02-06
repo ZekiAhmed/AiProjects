@@ -1,6 +1,7 @@
 // app/api/chat/route.ts
 import { streamText, UIMessage, convertToModelMessages } from "ai";
-import { google } from "@ai-sdk/google";
+// import { google } from "@ai-sdk/google";
+import { ollama } from "@/lib/ollama/client";
 
 
 export async function POST(req: Request) {
@@ -8,7 +9,8 @@ export async function POST(req: Request) {
     const { messages }: { messages: UIMessage[] } = await req.json();
 
     const result = streamText({
-      model: google("gemini-2.5-flash"),
+      // model: google("gemini-2.5-flash"),
+      model: ollama("gemma3:4b"),
       messages: [
         // {
         //   role: "system",

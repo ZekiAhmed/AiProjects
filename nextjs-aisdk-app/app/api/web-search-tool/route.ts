@@ -2,20 +2,25 @@ import {
   streamText,
   UIMessage,
   convertToModelMessages,
+  tool,
   InferUITools,
   UIDataTypes,
   stepCountIs,
-  type ToolSet,
 } from "ai";
+import { z } from "zod";
 // import { openai } from "@ai-sdk/openai";
-import { anthropic } from "@ai-sdk/anthropic";
+// import { anthropic } from "@ai-sdk/anthropic";
+import { ollama as oll } from "@/lib/ollama/client";
+import { ollama } from 'ai-sdk-ollama';
 
 const tools = {
   // web_search_preview: openai.tools.webSearchPreview({}),
-  web_search: anthropic.tools.webSearch_20250305({
-    maxUses: 1,
-  }),
+  // web_search: anthropic.tools.webSearch_20250305({
+  //   maxUses: 1,
+  // }),
+  search: ollama.tools.webSearch(),
 }
+
 
 export type ChatTools = InferUITools<typeof tools>;
 export type ChatMessage = UIMessage<never, UIDataTypes, ChatTools>;
@@ -26,7 +31,8 @@ export async function POST(req: Request) {
 
     const result = streamText({
       // model: openai.responses("gpt-5-nano"),
-      model: anthropic("claude-sonnet-4-20250514"),
+      // model: anthropic("claude-sonnet-4-20250514"),
+      model: oll("qwen2.5:7b"),
       messages: await convertToModelMessages(messages),
       tools,
       stopWhen: stepCountIs(2),

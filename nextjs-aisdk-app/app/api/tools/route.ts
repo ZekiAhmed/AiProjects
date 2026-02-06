@@ -7,7 +7,8 @@ import {
   UIDataTypes,
   stepCountIs,
 } from "ai";
-import { google } from "@ai-sdk/google";
+// import { google } from "@ai-sdk/google";
+import { ollama } from "@/lib/ollama/client";
 import { z } from "zod";
 
 const tools = {
@@ -36,7 +37,8 @@ export async function POST(req: Request) {
     const { messages }: { messages: ChatMessage[] } = await req.json();
 
     const result = streamText({
-      model: google("gemini-2.5-flash"),
+      // model: google("gemini-2.5-flash"),
+      model: ollama("qwen2.5:7b"),
       messages: await convertToModelMessages(messages),
       tools,
       stopWhen: stepCountIs(2),
