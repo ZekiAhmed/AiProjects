@@ -3,11 +3,11 @@
 import { Fragment, useState } from "react";
 import { useChat } from "@ai-sdk/react";
 import {
-  Attachments,
-  Attachment,
-  AttachmentPreview,
-  AttachmentInfo,
-  AttachmentRemove,
+    Attachments,
+    Attachment,
+    AttachmentPreview,
+    AttachmentInfo,
+    AttachmentRemove,
 } from "@/components/ai-elements/attachments";
 import {
     Conversation,
@@ -24,6 +24,14 @@ import {
     PromptInputTextarea,
     // PromptInputToolbar,
     PromptInputTools,
+    PromptInputActionAddAttachments,
+    PromptInputActionMenu,
+    PromptInputActionMenuContent,
+    PromptInputActionMenuTrigger,
+    PromptInputButton,
+    PromptInputFooter,
+    PromptInputHeader,
+    usePromptInputAttachments,
 } from "@/components/ai-elements/prompt-input";
 import { Spinner } from "@/components/ui/spinner"
 
@@ -72,19 +80,22 @@ export default function RAGChatBot() {
 
             <PromptInputProvider>
                 <PromptInput onSubmit={handleSubmit} className="mt-4">
+                    <PromptInputHeader>
+                        {/* <PromptInputAttachmentsDisplay /> */}
+                    </PromptInputHeader>
                     <PromptInputBody>
                         <PromptInputTextarea
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
-                            className="p-5"
+                            // className="p-5"
                         />
-                        {/* <PromptInputToolbar> */}
-                        {/* <PromptInputTools> */}
-                        {/* Model selector, web search, etc. */}
-                        {/* </PromptInputTools> */}
-                        <PromptInputSubmit className="m-2" />
-                        {/* </PromptInputToolbar> */}
                     </PromptInputBody>
+                    <PromptInputFooter>
+                        <PromptInputTools>
+                            
+                        </PromptInputTools>
+                        <PromptInputSubmit className="" />
+                    </PromptInputFooter>
                 </PromptInput>
             </PromptInputProvider>
         </div>

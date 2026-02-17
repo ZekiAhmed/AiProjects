@@ -15,6 +15,7 @@
     "@ai-sdk/openai-compatible": "^2.0.30",
     "@ai-sdk/react": "^3.0.84",
     "@base-ui/react": "^1.1.0",
+    "@clerk/nextjs": "^6.37.4",
     "@hookform/resolvers": "^5.2.2",
     "@radix-ui/react-use-controllable-state": "^1.2.2",
     "@rive-app/react-webgl2": "^4.26.2",
