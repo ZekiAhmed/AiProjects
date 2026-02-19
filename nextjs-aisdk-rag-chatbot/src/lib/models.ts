@@ -44,6 +44,7 @@ const customOllama = customProvider({
   },
   embeddingModels: {
     fast: ollama.embeddingModel("qwen3-embedding:latest"),
+    cool: ollama.embeddingModel("nomic-embed-text:latest"),
   },
   fallbackProvider: ollama,
 });
