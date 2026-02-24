@@ -8,7 +8,7 @@ export async function generateEmbedding(text: string): Promise<number[]> {
 
   const { embedding } = await embed({
     // model: openai.textEmbeddingModel("text-embedding-3-small"),
-    model: registry.embeddingModel("ollama:cool"),
+    model: registry.embeddingModel("ollama:nomic"),
     value: input,
   });
 

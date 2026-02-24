@@ -41,6 +41,8 @@ const customAnthropic = customProvider({
 const customOllama = customProvider({
   languageModels: {
     gemma: ollama("gemma3:4b"),
+    deepseek: ollama("deepseek-r1:8b"),
+    qwen: ollama("qwen2.5:7b")
   },
   embeddingModels: {
     qwen3: ollama.embeddingModel("qwen3-embedding:latest"),
