@@ -40,11 +40,11 @@ const customAnthropic = customProvider({
 
 const customOllama = customProvider({
   languageModels: {
-    fast: ollama("gemma3:4b"),
+    gemma: ollama("gemma3:4b"),
   },
   embeddingModels: {
-    fast: ollama.embeddingModel("qwen3-embedding:latest"),
-    cool: ollama.embeddingModel("nomic-embed-text:latest"),
+    qwen3: ollama.embeddingModel("qwen3-embedding:latest"),
+    nomic: ollama.embeddingModel("nomic-embed-text:latest"),
   },
   fallbackProvider: ollama,
 });
