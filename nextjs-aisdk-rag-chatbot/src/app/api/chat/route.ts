@@ -48,7 +48,7 @@ export async function POST(req: Request) {
     const { messages }: { messages: ChatMessage[] } = await req.json();
 
     const result = streamText({
-      model: registry.languageModel("ollama:qwen"),
+      model: registry.languageModel("ollama:llama"),
       messages: await convertToModelMessages(messages),
       tools,
       system: `You are a helpful assistant with access to a knowledge base. 

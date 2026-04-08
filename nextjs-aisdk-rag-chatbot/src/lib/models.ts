@@ -42,7 +42,8 @@ const customOllama = customProvider({
   languageModels: {
     gemma: ollama("gemma3:4b"),
     deepseek: ollama("deepseek-r1:8b"),
-    qwen: ollama("qwen2.5:7b")
+    qwen: ollama("qwen2.5:7b"),
+    llama: ollama("llama3.1:latest")
   },
   embeddingModels: {
     qwen3: ollama.embeddingModel("qwen3-embedding:latest"),
