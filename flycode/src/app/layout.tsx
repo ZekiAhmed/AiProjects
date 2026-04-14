@@ -28,7 +28,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        // TooltipProvider is added
+        {/* TooltipProvider is added */}
         <TooltipProvider>{children}</TooltipProvider>
       </body>
     </html>
