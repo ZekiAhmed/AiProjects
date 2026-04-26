@@ -20,7 +20,7 @@ export async function generateEmbeddings(texts: string[]): Promise<number[][]> {
 
   const { embeddings } = await embedMany({
     // model: openai.textEmbeddingModel("text-embedding-3-small"),
-    model: registry.embeddingModel("ollama:cool"),
+    model: registry.embeddingModel("ollama:nomic"),
     values: inputs,
   });
 
